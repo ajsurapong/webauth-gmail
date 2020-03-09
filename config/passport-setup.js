@@ -1,6 +1,7 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const key = require("./key");
+const db = require("./mysql-setup");
 
 //serialize user data to cookie for session, called by passport.use() below
 passport.serializeUser((user, done) => {
@@ -24,19 +25,18 @@ passport.use(
     }, (accessToken, refreshToken, profile, done) => {
         // console.log(profile);
         // we may need: profile.id, profile.displayName, profile.photos[0].value, profile.emails[0].value
-        // use id or email to insert or verify with data in database
-
-        if(profile.emails[0].value == "usurapong@gmail.com") {
+        // use mail to verify with data in database
+        if(db.checkUser(profile.emails[0].value) != -1) {
             // console.log("admin");
             // assume that this email has a related ID in database"
-            let user = {"email": profile.emails[0].value, "photo": profile.photos[0].value};
+            const user = {"email": profile.emails[0].value, "photo": profile.photos[0].value};
             //admin
             //serialize user info to cookie, actually we can serialize more data, but should not be larger than cookie's size (4KB)
             done(null, user);
             //after this, it will call the callbackURL above 
         }
         else {
-            //committee
+            //authen passes, but not a system user
 
         }
     })
